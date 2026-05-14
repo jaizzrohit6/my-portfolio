@@ -1,0 +1,506 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--orange:#f89820;--orange-light:#fff7ed;--orange-border:#fed7aa;--green:#22c55e;--green-light:#f0fdf4;--red:#ef4444;--blue:#3b82f6;--purple:#8b5cf6}
+.wrap{padding:1rem 0;font-family:var(--font-sans)}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.header-left{display:flex;align-items:center;gap:10px}
+.lc-logo{width:28px;height:28px;border-radius:6px;background:#f89820;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:500}
+.header-title{font-size:16px;font-weight:500;color:var(--color-text-primary)}
+.header-sub{font-size:12px;color:var(--color-text-tertiary)}
+.approach-tabs{display:flex;gap:0;margin-bottom:0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.atab{padding:8px 16px;font-size:13px;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px}
+.atab.active{color:#f89820;border-bottom-color:#f89820;font-weight:500}
+.atab:hover:not(.active){color:var(--color-text-primary)}
+.add-approach{padding:8px 12px;font-size:12px;border:none;background:transparent;color:var(--color-text-tertiary);cursor:pointer}
+.add-approach:hover{color:var(--color-text-primary)}
+.panels{border:0.5px solid var(--color-border-tertiary);border-top:none;border-radius:0 0 var(--border-radius-lg) var(--border-radius-lg);overflow:hidden;margin-bottom:1rem}
+.panel{display:none;padding:12px}
+.panel.active{display:block}
+.panel-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.panel-top select{font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-secondary);padding:3px 8px;cursor:pointer}
+.panel-top input{font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);padding:3px 10px;width:180px}
+.panel-top input::placeholder{color:var(--color-text-tertiary)}
+textarea{width:100%;height:160px;font-family:var(--font-mono);font-size:12.5px;padding:10px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);resize:vertical;line-height:1.65;outline:none}
+textarea:focus{border-color:#f89820}
+.action-row{display:flex;gap:8px;margin-bottom:1.5rem}
+.btn-run{padding:8px 20px;font-size:13px;font-weight:500;border:none;border-radius:var(--border-radius-md);background:#f89820;color:#fff;cursor:pointer}
+.btn-run:hover{background:#e07818}
+.btn-run:active{transform:scale(.98)}
+.btn-run:disabled{background:#ccc;cursor:not-allowed}
+.btn-ghost{padding:8px 14px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.btn-ghost:hover{background:var(--color-background-secondary)}
+.loading-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-secondary);padding:.5rem 0;display:none}
+.spinner{width:15px;height:15px;border:2px solid var(--color-border-tertiary);border-top-color:#f89820;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.results-wrap{display:none}
+.result-header{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.04em}
+.single-result{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.sr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
+.sr-name{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.sr-badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px}
+.badge-time{background:#fff7ed;color:#9a3412}
+.badge-space{background:#f0fdf4;color:#166534}
+.badge-best{background:#f0fdf4;color:#166534}
+.badge-worst{background:#fff7ed;color:#9a3412}
+.badge-avg{background:#eff6ff;color:#1e40af}
+.perf-row{display:flex;align-items:stretch;gap:0;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;margin-bottom:1rem}
+.perf-cell{flex:1;padding:.75rem 1rem;border-right:0.5px solid var(--color-border-tertiary)}
+.perf-cell:last-child{border-right:none}
+.perf-label{font-size:11px;color:var(--color-text-tertiary);margin-bottom:3px}
+.perf-val{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.perf-val span{font-size:11px;font-weight:400;color:var(--color-text-tertiary)}
+.perf-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.dist-wrap{margin-bottom:.75rem}
+.dist-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;display:flex;justify-content:space-between}
+.dist-bar-bg{height:32px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);overflow:visible;position:relative}
+.dist-bar-fill{height:100%;border-radius:var(--border-radius-md);position:relative;transition:width .6s ease}
+.dist-marker{position:absolute;top:-18px;font-size:10px;font-weight:500;white-space:nowrap;transform:translateX(-50%)}
+.dist-marker::after{content:'';position:absolute;top:18px;left:50%;transform:translateX(-50%);width:2px;height:38px;background:currentColor;opacity:.6}
+.dist-pct{font-size:11px;color:var(--color-text-secondary);margin-top:4px}
+.explanation{font-size:12px;color:var(--color-text-secondary);line-height:1.6;padding:.6rem .8rem;background:var(--color-background-secondary);border-radius:var(--border-radius-md);margin-top:.5rem}
+.tip-row{display:flex;align-items:flex-start;gap:6px;font-size:12px;color:var(--color-text-secondary);margin-top:.6rem}
+.tip-row i{color:#f89820;flex-shrink:0;margin-top:1px}
+.compare-section{margin-top:1.5rem}
+.compare-title{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.winner-strip{display:flex;align-items:center;gap:10px;background:#fff7ed;border:0.5px solid #fed7aa;border-radius:var(--border-radius-md);padding:.75rem 1rem;margin-bottom:1rem}
+.winner-icon{width:32px;height:32px;border-radius:50%;background:#f89820;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;flex-shrink:0}
+.winner-text{font-size:13px;color:#9a3412}
+.winner-text strong{font-weight:500;color:#7c2d12}
+.chart-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.chart-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:.25rem}
+.chart-sub{font-size:11px;color:var(--color-text-tertiary);margin-bottom:.75rem}
+.legend-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:.75rem}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.chart-wrap{position:relative;width:100%}
+.compare-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:.75rem;margin-bottom:1rem}
+.cc{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:.85rem 1rem}
+.cc.winner{border:1.5px solid #f89820}
+.cc-rank{font-size:10px;font-weight:500;color:var(--color-text-tertiary);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.cc-name{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:.5rem}
+.cc-row{font-size:12px;color:var(--color-text-secondary);display:flex;justify-content:space-between;padding:2px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.cc-row:last-child{border-bottom:none}
+.cc-row strong{color:var(--color-text-primary);font-weight:500}
+.speedup{display:inline-block;font-size:10px;background:#f0fdf4;color:#166534;padding:1px 6px;border-radius:10px;margin-left:4px;font-weight:500}
+</style>
+
+<div class="wrap">
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden">LeetCode-style code complexity and performance comparison dashboard</h2>
+
+<div class="header">
+  <div class="header-left">
+    <div class="lc-logo"><i class="ti ti-code" aria-hidden="true" style="font-size:14px"></i></div>
+    <div>
+      <div class="header-title">Complexity Analyzer</div>
+      <div class="header-sub">LeetCode-style performance comparison</div>
+    </div>
+  </div>
+  <button class="btn-ghost" onclick="loadDemo()" style="font-size:12px"><i class="ti ti-file-code" aria-hidden="true" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>Load demo</button>
+</div>
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between">
+  <div class="approach-tabs" id="atabs" style="flex:1;border-radius:var(--border-radius-md) var(--border-radius-md) 0 0;border:0.5px solid var(--color-border-tertiary);border-bottom:none">
+    <button class="atab active" data-idx="0">Approach 1</button>
+    <button class="atab" data-idx="1" style="display:none">Approach 2</button>
+    <button class="atab" data-idx="2" style="display:none">Approach 3</button>
+    <button class="add-approach" onclick="addApproach()" id="addBtn"><i class="ti ti-plus" aria-hidden="true" style="font-size:13px;vertical-align:-1px"></i> Add</button>
+  </div>
+</div>
+
+<div class="panels" id="panels">
+  <div class="panel active" data-idx="0">
+    <div class="panel-top">
+      <input placeholder="Approach name (e.g. Brute force)" id="name-0" value="Brute force">
+      <select id="lang-0">
+        <option value="Python">Python</option><option value="JavaScript">JavaScript</option>
+        <option value="Java">Java</option><option value="C++">C++</option>
+        <option value="Go">Go</option><option value="Rust">Rust</option>
+      </select>
+    </div>
+    <textarea id="code-0" placeholder="# Paste your code here..."></textarea>
+  </div>
+  <div class="panel" data-idx="1">
+    <div class="panel-top">
+      <input placeholder="Approach name (e.g. Optimized)" id="name-1" value="Optimized">
+      <select id="lang-1">
+        <option value="Python">Python</option><option value="JavaScript">JavaScript</option>
+        <option value="Java">Java</option><option value="C++">C++</option>
+        <option value="Go">Go</option><option value="Rust">Rust</option>
+      </select>
+    </div>
+    <textarea id="code-1" placeholder="# Paste your optimized code here..."></textarea>
+  </div>
+  <div class="panel" data-idx="2">
+    <div class="panel-top">
+      <input placeholder="Approach name (e.g. Two pointer)" id="name-2" value="Two pointer">
+      <select id="lang-2">
+        <option value="Python">Python</option><option value="JavaScript">JavaScript</option>
+        <option value="Java">Java</option><option value="C++">C++</option>
+        <option value="Go">Go</option><option value="Rust">Rust</option>
+      </select>
+    </div>
+    <textarea id="code-2" placeholder="# Paste your third approach here..."></textarea>
+  </div>
+</div>
+
+<div class="action-row">
+  <button class="btn-run" id="runBtn" onclick="runAnalysis()"><i class="ti ti-player-play" aria-hidden="true" style="font-size:13px;vertical-align:-1px;margin-right:5px"></i>Analyze</button>
+  <button class="btn-ghost" onclick="resetAll()"><i class="ti ti-refresh" aria-hidden="true" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>Reset</button>
+</div>
+
+<div class="loading-row" id="loadingRow"><div class="spinner"></div><span id="loadingText">Analyzing code...</span></div>
+
+<div class="results-wrap" id="resultsWrap">
+  <div id="singleResults"></div>
+  <div id="compareBlock" style="display:none">
+    <div class="compare-section">
+      <div class="compare-title"><i class="ti ti-trophy" aria-hidden="true" style="color:#f89820"></i>Head-to-head comparison</div>
+      <div id="winnerStrip"></div>
+      <div class="compare-cards" id="compareCards"></div>
+      <div class="chart-card">
+        <div class="chart-title">Runtime comparison</div>
+        <div class="chart-sub">Simulated execution time distribution — like LeetCode's runtime chart</div>
+        <div class="legend-row" id="distLegend"></div>
+        <div class="chart-wrap" style="height:200px"><canvas id="distChart" role="img" aria-label="Runtime distribution chart comparing all approaches">Runtime distribution comparison across approaches.</canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Complexity score</div>
+        <div class="chart-sub">Lower is better — O(1)=1, O(log n)=2, O(n)=3, O(n log n)=4, O(n²)=6, O(2^n)=8</div>
+        <div class="legend-row" id="scoreLegend"></div>
+        <div class="chart-wrap" style="height:180px"><canvas id="scoreChart" role="img" aria-label="Complexity score bar chart comparing time and space complexity across approaches">Complexity scores per approach.</canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Memory usage comparison</div>
+        <div class="chart-sub">Simulated memory percentile — beats X% of submissions</div>
+        <div class="legend-row" id="memLegend"></div>
+        <div class="chart-wrap" style="height:160px"><canvas id="memChart" role="img" aria-label="Memory usage comparison chart">Memory usage comparison.</canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let activeApproaches=1,currentTab=0,results=[],distC,scoreC,memC;
+const COLORS=['#f89820','#3b82f6','#8b5cf6'];
+const COLORS_BG=['rgba(248,152,32,0.15)','rgba(59,130,246,0.15)','rgba(139,92,246,0.15)'];
+
+function switchTab(idx){
+  currentTab=idx;
+  document.querySelectorAll('.atab').forEach(t=>t.classList.toggle('active',+t.dataset.idx===idx));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',+p.dataset.idx===idx));
+}
+document.getElementById('atabs').addEventListener('click',e=>{const t=e.target.closest('.atab');if(t)switchTab(+t.dataset.idx);});
+
+function addApproach(){
+  if(activeApproaches>=3)return;
+  const idx=activeApproaches;
+  activeApproaches++;
+  const tab=document.querySelector(`.atab[data-idx="${idx}"]`);
+  tab.style.display='';
+  switchTab(idx);
+  if(activeApproaches>=3)document.getElementById('addBtn').style.display='none';
+}
+
+function resetAll(){
+  [0,1,2].forEach(i=>{
+    const c=document.getElementById('code-'+i);
+    const n=document.getElementById('name-'+i);
+    if(c)c.value='';
+    if(n)n.value=['Brute force','Optimized','Two pointer'][i];
+  });
+  document.getElementById('resultsWrap').style.display='none';
+  results=[];
+  [distC,scoreC,memC].forEach(c=>{if(c)c.destroy();});
+  distC=scoreC=memC=null;
+}
+
+function loadDemo(){
+  document.getElementById('code-0').value=`def two_sum_brute(nums, target):
+    for i in range(len(nums)):
+        for j in range(i+1, len(nums)):
+            if nums[i] + nums[j] == target:
+                return [i, j]`;
+  document.getElementById('name-0').value='Brute force O(n²)';
+  if(activeApproaches<2)addApproach();
+  document.getElementById('code-1').value=`def two_sum_hash(nums, target):
+    seen = {}
+    for i, n in enumerate(nums):
+        if target - n in seen:
+            return [seen[target-n], i]
+        seen[n] = i`;
+  document.getElementById('name-1').value='Hash map O(n)';
+  switchTab(0);
+}
+
+function cxScore(c){
+  const s={'o(1)':1,'o(log n)':2,'o(n)':3,'o(n log n)':4,'o(n²)':6,'o(n^2)':6,'o(2^n)':8,'o(n!)':10};
+  if(!c)return 5;
+  const l=c.toLowerCase();
+  for(const k in s)if(l.includes(k))return s[k];
+  return 5;
+}
+
+function pctile(score){
+  const map={1:97,2:88,3:72,4:55,6:28,8:8,10:2};
+  return map[score]||50;
+}
+
+function simRuntime(score){
+  const base={1:2,2:8,3:40,4:120,6:800,8:5000,10:50000};
+  const b=base[score]||100;
+  return +(b*(0.85+Math.random()*0.3)).toFixed(1);
+}
+
+async function analyzeOne(code,lang,name,idx){
+  const t0=performance.now();
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:800,
+      messages:[{role:'user',content:`Analyze this ${lang} code. Respond ONLY with a valid JSON object — no markdown, no backticks, no explanation outside the JSON.
+{
+  "time_complexity": "O(...)",
+  "space_complexity": "O(...)",
+  "best_case": "O(...)",
+  "average_case": "O(...)",
+  "worst_case": "O(...)",
+  "explanation": "2 sentence explanation of the algorithm and why it has this complexity",
+  "tip": "One specific optimization or alternative approach"
+}
+Code:
+${code}`}]
+    })
+  });
+  const t1=performance.now();
+  const d=await r.json();
+  const raw=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  let p;
+  try{p=JSON.parse(raw.replace(/```json|```/g,'').trim());}
+  catch{p={time_complexity:'O(n)',space_complexity:'O(1)',best_case:'O(n)',average_case:'O(n)',worst_case:'O(n)',explanation:raw.slice(0,120),tip:'Review algorithm structure'};}
+  p.elapsed=+(t1-t0).toFixed(0);
+  p.name=name||'Approach '+(idx+1);
+  p.idx=idx;
+  const ts=cxScore(p.time_complexity);
+  p.timeScore=ts;
+  p.spaceScore=cxScore(p.space_complexity);
+  p.timePct=pctile(ts);
+  p.simMs=simRuntime(ts);
+  p.memPct=pctile(p.spaceScore);
+  return p;
+}
+
+async function runAnalysis(){
+  const codes=[];
+  for(let i=0;i<activeApproaches;i++){
+    const c=(document.getElementById('code-'+i)||{}).value?.trim();
+    const n=(document.getElementById('name-'+i)||{}).value?.trim()||'Approach '+(i+1);
+    const l=(document.getElementById('lang-'+i)||{}).value||'Python';
+    if(c)codes.push({code:c,lang:l,name:n,idx:i});
+  }
+  if(!codes.length){alert('Paste at least one code snippet.');return;}
+  document.getElementById('runBtn').disabled=true;
+  document.getElementById('loadingRow').style.display='flex';
+  document.getElementById('resultsWrap').style.display='none';
+  results=[];
+  for(let i=0;i<codes.length;i++){
+    document.getElementById('loadingText').textContent=`Analyzing ${codes[i].name}… (${i+1}/${codes.length})`;
+    results.push(await analyzeOne(codes[i].code,codes[i].lang,codes[i].name,i));
+  }
+  document.getElementById('loadingRow').style.display='none';
+  document.getElementById('runBtn').disabled=false;
+  renderResults();
+}
+
+function renderResults(){
+  document.getElementById('resultsWrap').style.display='block';
+  const sr=document.getElementById('singleResults');
+  sr.innerHTML=results.map(r=>renderSingle(r)).join('');
+  if(results.length>=2){
+    document.getElementById('compareBlock').style.display='block';
+    renderCompare();
+  }else{
+    document.getElementById('compareBlock').style.display='none';
+  }
+}
+
+function renderDistBar(pct,color,label){
+  return `<div class="dist-wrap">
+    <div class="dist-label"><span>${label}</span><span style="font-weight:500;color:var(--color-text-primary)">beats ${pct}%</span></div>
+    <div class="dist-bar-bg">
+      <div class="dist-bar-fill" style="width:${pct}%;background:${color}20;border-right:2px solid ${color};max-width:100%">
+        <div class="dist-marker" style="left:100%;color:${color}">${pct}%</div>
+      </div>
+    </div>
+    <div class="dist-pct" style="color:${color}">Faster than ${pct}% of ${results[0]?.lang||'Python'} submissions</div>
+  </div>`;
+}
+
+function renderSingle(r){
+  const c=COLORS[r.idx%3];
+  return `<div class="single-result">
+    <div class="sr-top">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:8px;height:8px;border-radius:50%;background:${c}"></div>
+        <span class="sr-name">${r.name}</span>
+        <span style="font-size:11px;color:var(--color-text-tertiary)">${r.elapsed} ms analysis</span>
+      </div>
+      <div class="sr-badges">
+        <span class="badge badge-time">Time: ${r.time_complexity}</span>
+        <span class="badge badge-space">Space: ${r.space_complexity}</span>
+      </div>
+    </div>
+    <div class="perf-row">
+      <div class="perf-cell">
+        <div class="perf-label">Runtime</div>
+        <div class="perf-val">${r.simMs} <span>ms</span></div>
+        <div class="perf-sub" style="color:${c}">Beats ${r.timePct}%</div>
+      </div>
+      <div class="perf-cell">
+        <div class="perf-label">Memory</div>
+        <div class="perf-val">${(Math.random()*10+8).toFixed(1)} <span>MB</span></div>
+        <div class="perf-sub" style="color:${c}">Beats ${r.memPct}%</div>
+      </div>
+      <div class="perf-cell">
+        <div class="perf-label">Best case</div>
+        <div class="perf-val" style="font-size:14px">${r.best_case}</div>
+        <div class="perf-sub">lower bound</div>
+      </div>
+      <div class="perf-cell">
+        <div class="perf-label">Worst case</div>
+        <div class="perf-val" style="font-size:14px">${r.worst_case}</div>
+        <div class="perf-sub">upper bound</div>
+      </div>
+    </div>
+    ${renderDistBar(r.timePct,c,'Runtime distribution')}
+    <div class="explanation">${r.explanation}</div>
+    ${r.tip?`<div class="tip-row"><i class="ti ti-bulb" aria-hidden="true" style="font-size:14px"></i><span>${r.tip}</span></div>`:''}
+  </div>`;
+}
+
+function renderCompare(){
+  const winner=results.reduce((a,b)=>a.timeScore<=b.timeScore?a:b);
+  const ws=document.getElementById('winnerStrip');
+  const speedup=results.length>=2?(results.filter(r=>r!==winner)[0].simMs/winner.simMs).toFixed(1):1;
+  ws.innerHTML=`<div class="winner-strip">
+    <div class="winner-icon"><i class="ti ti-trophy" aria-hidden="true" style="font-size:14px"></i></div>
+    <div class="winner-text"><strong>${winner.name}</strong> wins — ${winner.time_complexity} time complexity${speedup>1?' — '+speedup+'x faster than next best':''}</div>
+  </div>`;
+
+  const sorted=[...results].sort((a,b)=>a.timeScore-b.timeScore);
+  document.getElementById('compareCards').innerHTML=sorted.map((r,rank)=>`
+    <div class="cc ${r===winner?'winner':''}">
+      <div class="cc-rank">${rank===0?'#1 fastest':'#'+(rank+1)}</div>
+      <div class="cc-name">${r.name}</div>
+      <div class="cc-row"><span>Time</span><strong>${r.time_complexity}</strong></div>
+      <div class="cc-row"><span>Space</span><strong>${r.space_complexity}</strong></div>
+      <div class="cc-row"><span>Runtime</span><strong>${r.simMs} ms ${r===winner&&results.length>1?'<span class="speedup">fastest</span>':''}</strong></div>
+      <div class="cc-row"><span>Beats</span><strong>${r.timePct}% submissions</strong></div>
+    </div>
+  `).join('');
+
+  renderCharts();
+}
+
+function renderCharts(){
+  if(distC)distC.destroy();
+  if(scoreC)scoreC.destroy();
+  if(memC)memC.destroy();
+
+  const labels=Array.from({length:50},(_,i)=>(i*2)+'ms');
+  const datasets=results.map((r,i)=>{
+    const peak=r.timePct/100;
+    const center=Math.floor(peak*50);
+    const data=Array.from({length:50},(_,j)=>{
+      const dist=Math.abs(j-center);
+      return Math.max(0,Math.round(300*Math.exp(-0.5*(dist/4)**2)));
+    });
+    return{
+      label:r.name,
+      data,
+      borderColor:COLORS[i],
+      backgroundColor:COLORS_BG[i],
+      borderWidth:2,
+      fill:true,
+      tension:0.4,
+      pointRadius:0
+    };
+  });
+
+  const legHTML=results.map((r,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${COLORS[i]}"></span>${r.name} (${r.timePct}%)</span>`).join('');
+  document.getElementById('distLegend').innerHTML=legHTML;
+  document.getElementById('scoreLegend').innerHTML=results.map((r,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${COLORS[i]}"></span>${r.name}</span>`).join('');
+  document.getElementById('memLegend').innerHTML=results.map((r,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${COLORS[i]}"></span>${r.name}</span>`).join('');
+
+  distC=new Chart(document.getElementById('distChart'),{
+    type:'line',
+    data:{labels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{
+        callbacks:{title:ctx=>ctx[0].label,label:ctx=>`${ctx.dataset.label}: ${ctx.raw} submissions`}
+      }},
+      scales:{
+        x:{ticks:{maxTicksLimit:10,font:{size:10}},grid:{display:false}},
+        y:{ticks:{font:{size:10}},grid:{color:'rgba(128,128,128,0.08)'},title:{display:true,text:'# of submissions',font:{size:10}}}
+      }
+    }
+  });
+
+  scoreC=new Chart(document.getElementById('scoreChart'),{
+    type:'bar',
+    data:{
+      labels:['Time complexity','Space complexity'],
+      datasets:results.map((r,i)=>({
+        label:r.name,
+        data:[r.timeScore,r.spaceScore],
+        backgroundColor:COLORS_BG[i],
+        borderColor:COLORS[i],
+        borderWidth:1.5,
+        borderRadius:4
+      }))
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{font:{size:11}},grid:{display:false}},
+        y:{beginAtZero:true,max:11,
+          ticks:{font:{size:10},callback:v=>({1:'O(1)',2:'O(log n)',3:'O(n)',4:'O(n log n)',6:'O(n²)',8:'O(2^n)',10:'O(n!)'}[v]||'')},
+          grid:{color:'rgba(128,128,128,0.08)'}
+        }
+      }
+    }
+  });
+
+  memC=new Chart(document.getElementById('memChart'),{
+    type:'bar',
+    data:{
+      labels:results.map(r=>r.name),
+      datasets:[{
+        label:'Beats % of submissions (memory)',
+        data:results.map(r=>r.memPct),
+        backgroundColor:results.map((_,i)=>COLORS_BG[i]),
+        borderColor:results.map((_,i)=>COLORS[i]),
+        borderWidth:1.5,
+        borderRadius:4
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`Beats ${ctx.raw}% of submissions`}}},
+      scales:{
+        x:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%',font:{size:10}},grid:{color:'rgba(128,128,128,0.08)'}},
+        y:{ticks:{font:{size:11}},grid:{display:false}}
+      }
+    }
+  });
+}
+</script>

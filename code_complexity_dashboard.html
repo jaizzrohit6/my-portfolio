@@ -1,0 +1,433 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.dash{padding:1rem 0}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:8px}
+.top-bar h2{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.top-bar .subtitle{font-size:13px;color:var(--color-text-secondary)}
+.tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:6px 14px;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:transparent;color:var(--color-text-secondary);transition:all .15s}
+.tab.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-primary);font-weight:500}
+.tab:hover:not(.active){background:var(--color-background-secondary)}
+.add-tab{padding:6px 10px;font-size:13px;border:0.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;background:transparent;color:var(--color-text-secondary)}
+.add-tab:hover{background:var(--color-background-secondary)}
+.editor-wrap{position:relative;margin-bottom:1rem}
+.lang-sel{position:absolute;top:8px;right:8px;font-size:12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-secondary);padding:2px 6px;cursor:pointer;z-index:2}
+textarea{width:100%;height:180px;font-family:var(--font-mono);font-size:13px;padding:12px 80px 12px 12px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);resize:vertical;line-height:1.6;outline:none}
+textarea:focus{border-color:var(--color-border-primary)}
+.actions{display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+.btn-primary{padding:7px 18px;font-size:13px;font-weight:500;border:0.5px solid var(--color-border-primary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer}
+.btn-primary:hover{background:var(--color-background-secondary)}
+.btn-primary:active{transform:scale(.98)}
+.btn-ghost{padding:7px 14px;font-size:13px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:transparent;color:var(--color-text-secondary);cursor:pointer}
+.btn-ghost:hover{background:var(--color-background-secondary)}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.25rem}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.85rem 1rem}
+.metric .m-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.metric .m-val{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.metric .m-sub{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+.result-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.result-card h3{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:.5rem}
+.result-card p{font-size:13px;color:var(--color-text-secondary);line-height:1.6}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:var(--border-radius-md);margin-right:4px}
+.badge-time{background:#E6F1FB;color:#0C447C}
+.badge-space{background:#EAF3DE;color:#27500A}
+.badge-ok{background:#E1F5EE;color:#085041}
+.badge-warn{background:#FAEEDA;color:#633806}
+.badge-bad{background:#FCEBEB;color:#791F1F}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+@media(max-width:520px){.compare-grid{grid-template-columns:1fr}}
+.compare-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem}
+.compare-card.winner{border:1.5px solid #1D9E75}
+.compare-card h4{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:.5rem}
+.compare-card .title{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:.75rem}
+.chart-wrap{position:relative;width:100%;height:220px;margin-bottom:1rem}
+.chart-section{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.chart-section h3{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:1rem}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:.75rem;font-size:12px;color:var(--color-text-secondary)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend .dot{width:10px;height:10px;border-radius:2px}
+.loading{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-secondary);padding:.5rem 0}
+.spinner{width:16px;height:16px;border:2px solid var(--color-border-tertiary);border-top-color:var(--color-text-secondary);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none}
+.empty-state{text-align:center;padding:2rem;color:var(--color-text-tertiary);font-size:13px}
+.complexity-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;margin:2px}
+.winner-badge{font-size:11px;background:#E1F5EE;color:#085041;padding:2px 8px;border-radius:var(--border-radius-md);margin-left:6px}
+.tab-close{margin-left:5px;opacity:.5;cursor:pointer;font-size:11px}
+.tab-close:hover{opacity:1}
+.section-divider{border:none;border-top:0.5px solid var(--color-border-tertiary);margin:1rem 0}
+</style>
+
+<div class="dash">
+  <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Code Complexity Analyzer — paste code to analyze time and space complexity with millisecond benchmarks and comparison charts</h2>
+
+  <div class="top-bar">
+    <div>
+      <div style="font-size:18px;font-weight:500;color:var(--color-text-primary)">Code Complexity Analyzer</div>
+      <div class="subtitle">Paste code snippets, compare approaches, visualize performance</div>
+    </div>
+    <div style="font-size:12px;color:var(--color-text-tertiary);display:flex;align-items:center;gap:5px">
+      <i class="ti ti-sparkles" aria-hidden="true"></i> Powered by Claude AI
+    </div>
+  </div>
+
+  <div class="tabs" id="tabsRow">
+    <button class="tab active" data-idx="0" onclick="switchTab(0)">Approach 1 <span class="tab-close" onclick="removeTab(event,0)">✕</span></button>
+    <button class="add-tab" onclick="addTab()"><i class="ti ti-plus" aria-hidden="true"></i> Add approach</button>
+  </div>
+
+  <div id="tabPanels">
+    <div class="tab-panel" data-idx="0">
+      <div class="editor-wrap">
+        <select class="lang-sel" onchange="setLang(0,this.value)">
+          <option value="python">Python</option>
+          <option value="javascript">JavaScript</option>
+          <option value="java">Java</option>
+          <option value="cpp">C++</option>
+          <option value="go">Go</option>
+          <option value="rust">Rust</option>
+        </select>
+        <textarea placeholder="# Paste your code here...
+# Example:
+def two_sum(nums, target):
+    seen = {}
+    for i, n in enumerate(nums):
+        if target - n in seen:
+            return [seen[target-n], i]
+        seen[n] = i" id="code-0"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-primary" onclick="analyzeAll()"><i class="ti ti-player-play" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Analyze</button>
+    <button class="btn-ghost" onclick="clearAll()"><i class="ti ti-refresh" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Clear</button>
+    <button class="btn-ghost" onclick="loadExample()"><i class="ti ti-file-code" aria-hidden="true" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Load example</button>
+  </div>
+
+  <div id="loadingState" class="hidden">
+    <div class="loading"><div class="spinner"></div> Analyzing with Claude AI…</div>
+  </div>
+
+  <div id="resultsArea" class="hidden">
+    <div id="metricsGrid" class="metrics-grid"></div>
+    <div id="analysisCards"></div>
+    <div id="compareSection" class="hidden">
+      <hr class="section-divider">
+      <div style="font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:1rem">Comparison</div>
+      <div id="compareCards" class="compare-grid"></div>
+      <div class="chart-section">
+        <h3>Time complexity — execution time (ms)</h3>
+        <div class="legend" id="timeChartLegend"></div>
+        <div class="chart-wrap"><canvas id="timeChart" role="img" aria-label="Bar chart comparing execution time across approaches"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <h3>Space complexity ranking</h3>
+        <div class="legend" id="spaceChartLegend"></div>
+        <div class="chart-wrap"><canvas id="spaceChart" role="img" aria-label="Bar chart comparing space complexity scores across approaches"></canvas></div>
+      </div>
+      <div class="chart-section">
+        <h3>Overall score (lower is better)</h3>
+        <div class="legend" id="radarLegend"></div>
+        <div class="chart-wrap" style="height:260px"><canvas id="radarChart" role="img" aria-label="Radar chart comparing overall code metrics"></canvas></div>
+      </div>
+    </div>
+    <div id="singleAnalysis" class="hidden"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let tabs = [{id:0,lang:'python',name:'Approach 1'}];
+let nextId = 1;
+let results = [];
+let timeChart, spaceChart, radarChart;
+
+const COLORS = ['#378ADD','#1D9E75','#D85A30','#D4537E','#7F77DD','#BA7517'];
+const COLORS_LIGHT = ['#B5D4F4','#9FE1CB','#F5C4B3','#F4C0D1','#CECBF6','#FAC775'];
+
+function switchTab(idx){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',parseInt(t.dataset.idx)===idx));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.style.display=parseInt(p.dataset.idx)===idx?'block':'none');
+}
+
+function addTab(){
+  const idx = nextId++;
+  const name = 'Approach '+(tabs.length+1);
+  tabs.push({id:idx,lang:'python',name});
+  const tabsRow = document.getElementById('tabsRow');
+  const addBtn = tabsRow.querySelector('.add-tab');
+  const btn = document.createElement('button');
+  btn.className='tab';
+  btn.dataset.idx=idx;
+  btn.innerHTML=`${name} <span class="tab-close" onclick="removeTab(event,${idx})">✕</span>`;
+  btn.onclick=()=>switchTab(idx);
+  tabsRow.insertBefore(btn,addBtn);
+  const panels = document.getElementById('tabPanels');
+  const panel = document.createElement('div');
+  panel.className='tab-panel';
+  panel.dataset.idx=idx;
+  panel.style.display='none';
+  panel.innerHTML=`<div class="editor-wrap">
+    <select class="lang-sel" onchange="setLang(${idx},this.value)">
+      <option value="python">Python</option>
+      <option value="javascript">JavaScript</option>
+      <option value="java">Java</option>
+      <option value="cpp">C++</option>
+      <option value="go">Go</option>
+      <option value="rust">Rust</option>
+    </select>
+    <textarea placeholder="# Paste approach ${tabs.length} code here..." id="code-${idx}"></textarea>
+  </div>`;
+  panels.appendChild(panel);
+  switchTab(idx);
+}
+
+function removeTab(e,idx){
+  e.stopPropagation();
+  if(tabs.length<=1)return;
+  tabs=tabs.filter(t=>t.id!==idx);
+  document.querySelector(`.tab[data-idx="${idx}"]`)?.remove();
+  document.querySelector(`.tab-panel[data-idx="${idx}"]`)?.remove();
+  switchTab(tabs[0].id);
+}
+
+function setLang(idx,val){
+  const t=tabs.find(t=>t.id===idx);
+  if(t)t.lang=val;
+}
+
+function clearAll(){
+  tabs.forEach(t=>{
+    const el=document.getElementById('code-'+t.id);
+    if(el)el.value='';
+  });
+  document.getElementById('resultsArea').classList.add('hidden');
+  results=[];
+}
+
+function loadExample(){
+  const examples=[
+`def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        for j in range(n - i - 1):
+            if arr[j] > arr[j+1]:
+                arr[j], arr[j+1] = arr[j+1], arr[j]
+    return arr`,
+`def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
+    mid = len(arr) // 2
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    return merge(left, right)
+
+def merge(left, right):
+    result = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i]); i+=1
+        else:
+            result.append(right[j]); j+=1
+    result.extend(left[i:])
+    result.extend(right[j:])
+    return result`];
+
+  const firstCode = document.getElementById('code-'+tabs[0].id);
+  if(firstCode) firstCode.value = examples[0];
+  if(tabs.length < 2) addTab();
+  const secondCode = document.getElementById('code-'+tabs[1].id);
+  if(secondCode) secondCode.value = examples[1];
+}
+
+function complexityToScore(c){
+  const s={'O(1)':1,'O(log n)':2,'O(n)':3,'O(n log n)':4,'O(n²)':6,'O(n^2)':6,'O(2^n)':8,'O(n!)':10};
+  for(const k in s) if(c.toLowerCase().includes(k.toLowerCase())) return s[k];
+  return 5;
+}
+
+function getComplexityClass(c){
+  const s=complexityToScore(c);
+  if(s<=2)return 'badge-ok';
+  if(s<=4)return 'badge-warn';
+  return 'badge-bad';
+}
+
+async function analyzeAll(){
+  const activeCodes = tabs.map(t=>({
+    id:t.id,
+    name:t.name,
+    lang:t.lang,
+    code:(document.getElementById('code-'+t.id)||{}).value?.trim()
+  })).filter(t=>t.code);
+
+  if(!activeCodes.length){alert('Please paste at least one code snippet.');return;}
+
+  document.getElementById('loadingState').classList.remove('hidden');
+  document.getElementById('resultsArea').classList.add('hidden');
+
+  try{
+    const analysisPromises = activeCodes.map(t=>analyzeOne(t));
+    results = await Promise.all(analysisPromises);
+    renderResults(results, activeCodes);
+  }catch(err){
+    document.getElementById('loadingState').classList.add('hidden');
+    alert('Analysis failed: '+err.message);
+  }
+}
+
+async function analyzeOne({id,name,lang,code}){
+  const t0 = performance.now();
+  const resp = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      messages:[{role:'user',content:`Analyze this ${lang} code for complexity. Respond ONLY with a JSON object, no markdown, no backticks, no extra text.
+
+Required format:
+{
+  "time_complexity": "O(...)",
+  "space_complexity": "O(...)",
+  "explanation": "2-3 sentence explanation",
+  "best_case": "O(...)",
+  "worst_case": "O(...)",
+  "average_case": "O(...)",
+  "recommendation": "One improvement tip"
+}
+
+Code:
+${code}`}]
+    })
+  });
+  const t1 = performance.now();
+  const data = await resp.json();
+  const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  let parsed;
+  try{
+    const clean = raw.replace(/```json|```/g,'').trim();
+    parsed = JSON.parse(clean);
+  }catch{
+    parsed={time_complexity:'O(n)',space_complexity:'O(1)',explanation:raw,best_case:'—',worst_case:'—',average_case:'—',recommendation:'—'};
+  }
+  parsed.elapsed = parseFloat((t1-t0).toFixed(1));
+  parsed.name = name;
+  return parsed;
+}
+
+function renderResults(res, activeCodes){
+  document.getElementById('loadingState').classList.add('hidden');
+  document.getElementById('resultsArea').classList.remove('hidden');
+
+  const grid = document.getElementById('metricsGrid');
+  grid.innerHTML='';
+  const count = res.length;
+  const avgTime = res.reduce((s,r)=>s+r.elapsed,0)/count;
+  const best = res.reduce((a,b)=>complexityToScore(a.time_complexity)<=complexityToScore(b.time_complexity)?a:b);
+  grid.innerHTML=`
+    <div class="metric"><div class="m-label">Approaches</div><div class="m-val">${count}</div><div class="m-sub">analyzed</div></div>
+    <div class="metric"><div class="m-label">Avg response</div><div class="m-val">${avgTime.toFixed(0)}<span style="font-size:13px;font-weight:400"> ms</span></div><div class="m-sub">AI analysis time</div></div>
+    <div class="metric"><div class="m-label">Best time</div><div class="m-val" style="font-size:16px">${best.time_complexity}</div><div class="m-sub">${best.name}</div></div>
+    <div class="metric"><div class="m-label">Fastest AI</div><div class="m-val">${Math.min(...res.map(r=>r.elapsed)).toFixed(0)}<span style="font-size:13px;font-weight:400"> ms</span></div><div class="m-sub">min response</div></div>
+  `;
+
+  const cards = document.getElementById('analysisCards');
+  cards.innerHTML = res.map((r,i)=>{
+    const tc = getComplexityClass(r.time_complexity);
+    const sc = getComplexityClass(r.space_complexity);
+    return `<div class="result-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+        <h3 style="margin:0">${r.name} — <span style="font-weight:400;color:var(--color-text-secondary)">${activeCodes[i]?.lang||''}</span></h3>
+        <span style="font-size:12px;color:var(--color-text-tertiary)">${r.elapsed} ms</span>
+      </div>
+      <div style="margin-bottom:.5rem">
+        <span class="badge ${tc}">⏱ Time: ${r.time_complexity}</span>
+        <span class="badge ${sc}">🧠 Space: ${r.space_complexity}</span>
+      </div>
+      <p style="margin-bottom:.5rem">${r.explanation}</p>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:.5rem">
+        Best: <strong>${r.best_case}</strong> &nbsp;|&nbsp; Average: <strong>${r.average_case}</strong> &nbsp;|&nbsp; Worst: <strong>${r.worst_case}</strong>
+      </div>
+      ${r.recommendation&&r.recommendation!=='—'?`<div style="margin-top:.75rem;padding:.6rem .75rem;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:12px;color:var(--color-text-secondary)"><i class="ti ti-bulb" style="font-size:13px;vertical-align:-1px;margin-right:4px" aria-hidden="true"></i>${r.recommendation}</div>`:''}
+    </div>`;
+  }).join('');
+
+  const compareSection = document.getElementById('compareSection');
+  if(res.length>=2){
+    compareSection.classList.remove('hidden');
+    renderCompare(res,activeCodes);
+    renderCharts(res);
+  }else{
+    compareSection.classList.add('hidden');
+  }
+}
+
+function renderCompare(res, activeCodes){
+  const winner = res.reduce((a,b)=>complexityToScore(a.time_complexity)<=complexityToScore(b.time_complexity)?a:b);
+  const cCards = document.getElementById('compareCards');
+  cCards.innerHTML = res.map((r,i)=>`
+    <div class="compare-card ${r.name===winner.name?'winner':''}">
+      ${r.name===winner.name?'<span class="winner-badge">✓ Best time complexity</span><br>':''}
+      <div class="title">${r.name}</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:.5rem">${activeCodes[i]?.lang||''}</div>
+      <div style="margin-bottom:.4rem"><span class="badge ${getComplexityClass(r.time_complexity)}">Time: ${r.time_complexity}</span></div>
+      <div style="margin-bottom:.4rem"><span class="badge ${getComplexityClass(r.space_complexity)}">Space: ${r.space_complexity}</span></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:.5rem">Response: ${r.elapsed} ms</div>
+    </div>
+  `).join('');
+}
+
+function renderCharts(res){
+  if(timeChart){timeChart.destroy();timeChart=null;}
+  if(spaceChart){spaceChart.destroy();spaceChart=null;}
+  if(radarChart){radarChart.destroy();radarChart=null;}
+
+  const labels = res.map(r=>r.name);
+  const timeData = res.map(r=>r.elapsed);
+  const spaceScores = res.map(r=>complexityToScore(r.space_complexity));
+  const timeScores = res.map(r=>complexityToScore(r.time_complexity));
+
+  const legendHTML = res.map((r,i)=>`<span><span class="dot" style="background:${COLORS[i%COLORS.length]}"></span>${r.name}</span>`).join('');
+  document.getElementById('timeChartLegend').innerHTML=legendHTML;
+  document.getElementById('spaceChartLegend').innerHTML=legendHTML;
+  document.getElementById('radarLegend').innerHTML=legendHTML;
+
+  timeChart = new Chart(document.getElementById('timeChart'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Response time (ms)',data:timeData,backgroundColor:COLORS.slice(0,res.length),borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'ms'},grid:{color:'rgba(128,128,128,.1)'}},x:{grid:{display:false}}}}
+  });
+
+  spaceChart = new Chart(document.getElementById('spaceChart'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Space complexity score',data:spaceScores,backgroundColor:COLORS.slice(0,res.length),borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const s=ctx.raw;const m={1:'O(1)',2:'O(log n)',3:'O(n)',4:'O(n log n)',6:'O(n²)',8:'O(2^n)',10:'O(n!)'};return m[s]||'score:'+s;}}}},scales:{y:{beginAtZero:true,max:11,ticks:{callback:v=>{const m={1:'O(1)',2:'O(log n)',3:'O(n)',4:'O(n log n)',6:'O(n²)',8:'O(2^n)',10:'O(n!)'};return m[v]||''}},grid:{color:'rgba(128,128,128,.1)'}},x:{grid:{display:false}}}}
+  });
+
+  const radarDatasets = res.map((r,i)=>({
+    label:r.name,
+    data:[
+      complexityToScore(r.time_complexity),
+      complexityToScore(r.space_complexity),
+      complexityToScore(r.worst_case),
+      complexityToScore(r.best_case),
+      r.elapsed/200
+    ],
+    borderColor:COLORS[i%COLORS.length],
+    backgroundColor:COLORS_LIGHT[i%COLORS_LIGHT.length]+'55',
+    pointBackgroundColor:COLORS[i%COLORS.length],
+    borderWidth:1.5
+  }));
+
+  radarChart = new Chart(document.getElementById('radarChart'),{
+    type:'radar',
+    data:{labels:['Time complexity','Space complexity','Worst case','Best case','AI resp speed'],datasets:radarDatasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{beginAtZero:true,max:10,pointLabels:{font:{size:11}},ticks:{display:false},grid:{color:'rgba(128,128,128,.12)'}}}}
+  });
+}
+</script>
