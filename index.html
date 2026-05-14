@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complexity Analyzer</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo">
+        <div class="logo-icon">CA</div>
+        <span>Complexity Analyzer</span>
+      </div>
+      <div class="powered-by">Powered by Claude AI</div>
+    </div>
+    <div class="topbar-right">
+      <div class="api-key-wrap" id="apiKeyWrap">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <input class="api-key-input" id="apiKeyInput" type="password" placeholder="sk-ant-... (Anthropic API key)" autocomplete="off">
+        <button class="btn-key-toggle" id="keyToggle" onclick="App.toggleKey()" title="Show/hide key">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" id="eyeIcon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button class="btn-secondary" onclick="App.loadDemo()">Load Demo</button>
+      <button class="btn-secondary" onclick="App.resetAll()">Reset</button>
+      <button class="btn-primary" id="runBtn" onclick="App.runAnalysis()">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M2 1l9 5-9 5V1z"/></svg>
+        Analyze
+      </button>
+    </div>
+  </header>
+
+  <!-- Approach Tabs -->
+  <div class="approach-bar">
+    <div class="tabs-row" id="tabsRow">
+      <button class="tab active" data-idx="0" onclick="App.switchTab(0)">
+        <span class="tab-dot" style="background:#ffa116"></span>
+        <span id="tl-0">Approach 1</span>
+      </button>
+      <button class="tab hidden" data-idx="1" onclick="App.switchTab(1)">
+        <span class="tab-dot" style="background:#3b82f6"></span>
+        <span id="tl-1">Approach 2</span>
+        <span class="tab-x" onclick="App.removeTab(event,1)">✕</span>
+      </button>
+      <button class="tab hidden" data-idx="2" onclick="App.switchTab(2)">
+        <span class="tab-dot" style="background:#a78bfa"></span>
+        <span id="tl-2">Approach 3</span>
+        <span class="tab-x" onclick="App.removeTab(event,2)">✕</span>
+      </button>
+      <button class="tab-add" id="addTabBtn" onclick="App.addTab()">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="5.5" y1="1" x2="5.5" y2="10"/><line x1="1" y1="5.5" x2="10" y2="5.5"/></svg>
+        Add approach
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Split -->
+  <div class="main-split">
+
+    <!-- LEFT: Editor -->
+    <div class="editor-panel">
+      <div class="panel-header">
+        <span class="panel-label">Editor</span>
+        <div class="editor-controls">
+          <input class="name-input" id="name-input" placeholder="Approach name" value="Approach 1" oninput="App.onNameChange(this.value)">
+          <select class="lang-select" id="lang-select" onchange="App.onLangChange(this.value)">
+            <option value="Python">Python</option>
+            <option value="JavaScript">JavaScript</option>
+            <option value="Java">Java</option>
+            <option value="C++">C++</option>
+            <option value="Go">Go</option>
+            <option value="Rust">Rust</option>
+          </select>
+        </div>
+      </div>
+      <div class="editor-body">
+        <div class="line-numbers" id="lineNumbers">1</div>
+        <textarea class="code-area" id="codeArea" placeholder="# Paste your code here...
+
+def example(nums, target):
+    pass" oninput="App.onCodeInput(this)" onscroll="App.syncScroll(this)" onkeydown="App.handleTab(event)" spellcheck="false"></textarea>
+      </div>
+      <div class="editor-footer">
+        <span id="lineCol">Ln 1, Col 1</span>
+        <span id="charCount">0 chars</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: Results -->
+    <div class="results-panel" id="resultsPanel">
+
+      <!-- Loading -->
+      <div class="loading-overlay" id="loadingOverlay" style="display:none">
+        <div class="loading-card">
+          <div class="spinner"></div>
+          <div class="loading-text" id="loadingText">Analyzing...</div>
+          <div class="loading-sub">Claude AI is examining your code</div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+            <rect x="8" y="4" width="34" height="44" rx="4" stroke="#2a2a2a" stroke-width="2"/>
+            <line x1="16" y1="16" x2="34" y2="16" stroke="#2a2a2a" stroke-width="2" stroke-linecap="round"/>
+            <line x1="16" y1="23" x2="30" y2="23" stroke="#2a2a2a" stroke-width="2" stroke-linecap="round"/>
+            <line x1="16" y1="30" x2="32" y2="30" stroke="#2a2a2a" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="42" cy="42" r="10" fill="#0f0f0f" stroke="#ffa116" stroke-width="2"/>
+            <line x1="38" y1="42" x2="46" y2="42" stroke="#ffa116" stroke-width="2" stroke-linecap="round"/>
+            <line x1="42" y1="38" x2="42" y2="46" stroke="#ffa116" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p class="empty-title">Ready to analyze</p>
+        <p class="empty-sub">Paste your code in the editor and click <strong>Analyze</strong>.<br>Add multiple approaches to compare them.</p>
+        <button class="btn-demo-lg" onclick="App.loadDemo()">Try with demo code</button>
+      </div>
+
+      <!-- Results content -->
+      <div id="resultsContent" style="display:none"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Hidden data stores -->
+<div id="store" style="display:none">
+  <textarea id="code-0"></textarea>
+  <textarea id="code-1"></textarea>
+  <textarea id="code-2"></textarea>
+  <input id="name-0" value="Approach 1">
+  <input id="name-1" value="Approach 2">
+  <input id="name-2" value="Approach 3">
+  <input id="lang-0" value="Python">
+  <input id="lang-1" value="Python">
+  <input id="lang-2" value="Python">
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
